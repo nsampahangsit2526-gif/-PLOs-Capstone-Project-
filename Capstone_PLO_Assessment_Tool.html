@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เครื่องมือประเมิน PLO โครงงานพิเศษ (Capstone)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#13283F; --orange:#FF5A2C; --teal:#0FB5A6;
+    --p1:#2F6FED; --p2:#0FB5A6; --p3:#7C5CFF; --p4:#FF7A18;
+    --ink:#1f2d3d; --muted:#6b7785; --line:#e3e8ee; --bg:#f4f6f9; --card:#ffffff;
+    --pass:#12936f; --passbg:#e4f6ef; --fail:#c2410c; --failbg:#fdeee6;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Sarabun',sans-serif;font-size:16px;line-height:1.55}
+  h1,h2,h3,.num{font-family:'Kanit',sans-serif;font-weight:600;margin:0}
+  .wrap{max-width:1080px;margin:0 auto;padding:20px 16px 80px}
+  header.top{background:var(--navy);color:#fff;border-radius:16px;padding:22px 24px;margin-bottom:18px}
+  header.top h1{font-size:24px;font-weight:700;letter-spacing:.2px}
+  header.top p{margin:6px 0 0;color:#cdd8e6;font-size:15px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+  .card > h2{font-size:18px;color:var(--navy);margin-bottom:4px;display:flex;align-items:center;gap:9px}
+  .card .sub{color:var(--muted);font-size:14px;margin:0 0 14px}
+  .pill{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;background:var(--orange);color:#fff;font-family:'Kanit';font-size:15px;font-weight:600;flex:none}
+
+  /* settings row */
+  .settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px;font-weight:600}
+  .field input,.field select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-family:'Sarabun';font-size:15px;background:#fff;color:var(--ink)}
+  .field input:focus,.field select:focus{outline:2px solid var(--teal);outline-offset:0;border-color:var(--teal)}
+
+  /* legend */
+  .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:4px}
+  .lg{border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px}
+  .lg b{font-family:'Kanit';font-size:16px}
+  .lg.l1{border-left:none;background:#fdeee6}.lg.l2{background:#fff6ec}.lg.l3{background:#eef7f0}.lg.l4{background:#e8f0ff}
+
+  /* PLO block */
+  .ploblock{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
+  .ploblock h3{font-size:16px;display:flex;align-items:center;gap:8px;margin-bottom:2px}
+  .dot{width:12px;height:12px;border-radius:50%;flex:none}
+  .ploblock .ploname{color:var(--muted);font-size:13.5px;margin:0 0 12px}
+  .sub-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:9px 0;border-top:1px dashed var(--line)}
+  .sub-row:first-of-type{border-top:none}
+  .sub-label{flex:1 1 260px;min-width:200px;font-size:14.5px}
+  .sub-code{font-family:'Kanit';color:var(--muted);font-weight:500;margin-right:5px}
+  .btns{display:flex;gap:6px;flex:none}
+  .scorebtn{width:38px;height:38px;border:1.5px solid var(--line);background:#fff;border-radius:9px;font-family:'Kanit';font-size:16px;font-weight:600;color:var(--muted);cursor:pointer;transition:.12s}
+  .scorebtn:hover{border-color:var(--teal)}
+  .scorebtn.sel{color:#fff;border-color:transparent}
+  .scorebtn.sel[data-v="1"]{background:#e0683f}
+  .scorebtn.sel[data-v="2"]{background:#f0992f}
+  .scorebtn.sel[data-v="3"]{background:var(--teal)}
+  .scorebtn.sel[data-v="4"]{background:var(--p1)}
+  .descline{flex:1 1 100%;font-size:13px;color:var(--muted);min-height:18px;padding-left:2px}
+  .plo-score{flex:none;font-family:'Kanit';font-size:14px;padding:5px 12px;border-radius:20px;font-weight:600;white-space:nowrap}
+  .plo-score.pass{background:var(--passbg);color:var(--pass)}
+  .plo-score.fail{background:var(--failbg);color:var(--fail)}
+  .plo-score.none{background:#eef1f4;color:var(--muted)}
+
+  .studenthead{display:grid;grid-template-columns:2fr 1.3fr 1.6fr;gap:12px;margin-bottom:14px}
+  @media(max-width:640px){.studenthead{grid-template-columns:1fr}}
+
+  .actionbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px}
+  button.primary{background:var(--orange);color:#fff;border:none;border-radius:10px;padding:11px 20px;font-family:'Kanit';font-size:15px;font-weight:600;cursor:pointer}
+  button.primary:hover{filter:brightness(1.05)}
+  button.ghost{background:#fff;color:var(--navy);border:1.5px solid var(--line);border-radius:10px;padding:10px 16px;font-family:'Kanit';font-size:14px;font-weight:500;cursor:pointer}
+  button.ghost:hover{border-color:var(--teal)}
+  .overall{margin-left:auto;font-family:'Kanit';font-size:15px;padding:8px 16px;border-radius:10px;font-weight:600}
+  .overall.pass{background:var(--passbg);color:var(--pass)}
+  .overall.fail{background:var(--failbg);color:var(--fail)}
+  .overall.none{background:#eef1f4;color:var(--muted)}
+
+  /* roster table */
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  th,td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--line)}
+  th{font-family:'Kanit';font-weight:600;color:#fff;background:var(--navy)}
+  th:first-child,td:first-child{text-align:left}
+  td.name{font-weight:600}
+  .tag{display:inline-block;min-width:34px;padding:2px 6px;border-radius:7px;font-family:'Kanit';font-weight:600;font-size:13px}
+  .tag.p{background:var(--passbg);color:var(--pass)}
+  .tag.f{background:var(--failbg);color:var(--fail)}
+  .del{background:none;border:none;color:var(--fail);cursor:pointer;font-size:18px;line-height:1}
+  .empty{color:var(--muted);text-align:center;padding:26px;font-size:15px}
+
+  /* dashboard */
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:8px}
+  .stat{border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .stat .big{font-family:'Kanit';font-size:30px;font-weight:700;color:var(--navy);line-height:1.1}
+  .stat .lbl{font-size:13px;color:var(--muted);margin-top:2px}
+  .bar-row{margin:13px 0}
+  .bar-row .top{display:flex;justify-content:space-between;font-size:14px;margin-bottom:5px}
+  .bar-row .top b{font-family:'Kanit'}
+  .track{height:14px;background:#eef1f4;border-radius:8px;overflow:hidden;position:relative}
+  .fill{height:100%;border-radius:8px;transition:width .4s}
+  .target-line{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--navy)}
+  .hint{font-size:13px;color:var(--muted);margin-top:3px}
+  .note{font-size:13px;color:var(--muted);background:#fbfcfd;border:1px dashed var(--line);border-radius:10px;padding:11px 13px;margin-top:6px}
+  @media print{.no-print{display:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>เครื่องมือประเมินการบรรลุ PLO — โครงงานพิเศษ (Capstone Project)</h1>
+    <p>หลักสูตรศิลปศาสตรบัณฑิต สาขาวิชาสื่อสารการกีฬา · กดเลือกระดับคะแนนแล้วระบบคิดผลให้อัตโนมัติ</p>
+  </header>
+
+  <!-- SETTINGS -->
+  <div class="card no-print">
+    <h2><span class="pill">1</span> ตั้งค่าการประเมิน</h2>
+    <p class="sub">ใช้กับนักศึกษาทุกคนในรุ่นที่ประเมิน</p>
+    <div class="settings">
+      <div class="field"><label>ปีการศึกษา</label><input id="setYear" value="2568"></div>
+      <div class="field"><label>ชั้นปี</label>
+        <select id="setLevel"><option>ปีที่ 4</option><option>ปีที่ 3</option><option>ปีที่ 2</option><option>ปีที่ 1</option></select>
+      </div>
+      <div class="field"><label>เป้าหมายการบรรลุของรุ่น (%)</label><input id="setTarget" type="number" value="70" min="0" max="100"></div>
+      <div class="field"><label>เกณฑ์ผ่านรายคน (คะแนน ≥)</label><input id="setPass" type="number" value="3" min="1" max="4" step="0.5"></div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="card no-print">
+    <h2><span class="pill">2</span> ความหมายของระดับคะแนน</h2>
+    <p class="sub">ใช้เป็นหลักในการกดเลือกแต่ละตัวชี้วัด — ระดับ 3 ขึ้นไป = ผ่านเกณฑ์</p>
+    <div class="legend">
+      <div class="lg l1"><b>1</b> ต้องปรับปรุง — ยังไม่แสดงสมรรถนะตามที่คาดหวัง</div>
+      <div class="lg l2"><b>2</b> ผ่านขั้นต่ำ — แสดงได้บางส่วน ยังมีข้อบกพร่องชัด</div>
+      <div class="lg l3"><b>3</b> ผ่านตามเกณฑ์ — แสดงสมรรถนะครบตามที่คาดหวัง</div>
+      <div class="lg l4"><b>4</b> ดีเยี่ยม — เกินเกณฑ์ มืออาชีพ/สร้างสรรค์โดดเด่น</div>
+    </div>
+  </div>
+
+  <!-- ASSESS ONE STUDENT -->
+  <div class="card no-print">
+    <h2><span class="pill">3</span> ประเมินนักศึกษา</h2>
+    <p class="sub">กรอกข้อมูล แล้วกดเลือกระดับ 1–4 ของแต่ละตัวชี้วัด ระบบจะคิดคะแนน PLO และสรุปผลให้ทันที</p>
+    <div class="studenthead">
+      <div class="field"><label>ชื่อ – สกุล</label><input id="stName" placeholder="เช่น นายสมชาย ใจดี"></div>
+      <div class="field"><label>รหัสนักศึกษา</label><input id="stId" placeholder="เช่น 6711xxxxxx"></div>
+      <div class="field"><label>ชื่อโครงงาน / Track</label>
+        <select id="stTrack">
+          <option>Content Creator</option><option>Brand &amp; Marketing</option>
+          <option>Entrepreneur</option><option>Innovation</option>
+        </select>
+      </div>
+    </div>
+    <div id="ploArea"></div>
+    <div class="actionbar">
+      <button class="primary" onclick="saveStudent()">＋ บันทึกนักศึกษาคนนี้</button>
+      <button class="ghost" onclick="resetForm()">ล้างฟอร์ม</button>
+      <span id="overallBadge" class="overall none">ยังประเมินไม่ครบ</span>
+    </div>
+  </div>
+
+  <!-- ROSTER -->
+  <div class="card">
+    <h2><span class="pill">4</span> รายชื่อที่ประเมินแล้ว <span id="countTag" style="font-family:'Kanit';color:var(--muted);font-size:15px;font-weight:500"></span></h2>
+    <div id="rosterArea"></div>
+    <div class="actionbar no-print" style="margin-top:14px">
+      <button class="ghost" onclick="exportCSV()">⬇ ส่งออก CSV (สำหรับฐานข้อมูล PLO)</button>
+      <button class="ghost" onclick="window.print()">🖨 พิมพ์ / บันทึก PDF</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="card">
+    <h2><span class="pill">5</span> สรุปการบรรลุ PLO ของทั้งรุ่น (Cohort Achievement)</h2>
+    <p class="sub">คิดจากนักศึกษาที่บันทึกไว้ทั้งหมด เทียบกับเป้าหมายที่ตั้งไว้</p>
+    <div id="dashArea"><div class="empty">ยังไม่มีข้อมูล — บันทึกนักศึกษาอย่างน้อย 1 คนเพื่อดูสรุป</div></div>
+    <div class="note">หมายเหตุ: คะแนน PLO ของนักศึกษาแต่ละคน = ค่าเฉลี่ยของตัวชี้วัดย่อยในข้อนั้น “บรรลุ PLO” เมื่อค่าเฉลี่ย ≥ เกณฑ์ที่ตั้งไว้ และ “บรรลุครบ” เมื่อผ่านทั้ง 4 PLO ตัวเลขทั้งหมดคำนวณอัตโนมัติจากที่กดเลือก</div>
+  </div>
+
+</div>
+
+<script>
+const PLOS = [
+  { id:"PLO1", name:"ความรู้ด้านสื่อสารและกีฬา", color:"var(--p1)",
+    subs:[
+      { code:"1.1", name:"การวิเคราะห์สถานการณ์/กลุ่มเป้าหมายด้วยหลักการสื่อสาร",
+        desc:["ไม่มีการวิเคราะห์ หรือวิเคราะห์ผิดหลักการ","วิเคราะห์ได้บางส่วน ยังไม่ครบถ้วน","วิเคราะห์ครบถ้วน ถูกต้องตามหลักการ","วิเคราะห์ลึก เชื่อมโยงข้อมูลหลายมิติอย่างคมชัด"] },
+      { code:"1.2", name:"ความเป็นระบบและสมเหตุสมผลของแผนกลยุทธ์",
+        desc:["ไม่มีแผน หรือแผนไม่สมเหตุสมผล","มีแผนแต่ขาดความเชื่อมโยงกับเป้าหมาย","แผนเป็นระบบและสมเหตุสมผล","แผนเป็นระบบและนำไปปฏิบัติได้จริงระดับมืออาชีพ"] },
+    ]},
+  { id:"PLO2", name:"ทักษะภาษาอังกฤษ", color:"var(--p2)",
+    subs:[
+      { code:"2.1", name:"ความถูกต้องของภาษาอังกฤษ (ไวยากรณ์/คำศัพท์)",
+        desc:["ผิดพลาดมากจนสื่อความหมายไม่ได้","สื่อได้ระดับพื้นฐาน มีข้อผิดที่กระทบความเข้าใจบ่อย","ถูกต้องเหมาะสม มีข้อผิดเล็กน้อยที่ไม่กระทบ","ถูกต้องคล่องแคล่วระดับมืออาชีพ"] },
+      { code:"2.2", name:"ความเหมาะสมของการสื่อสารกับบริบทวิชาชีพ",
+        desc:["ไม่เหมาะกับบริบทวิชาชีพ","เหมาะบางส่วน ยังขาดศัพท์เฉพาะทาง","เหมาะสมกับบริบทสื่อสารกีฬา","สื่อสารเชิงเทคนิค/กลยุทธ์ได้ชัดเจนระดับสากล"] },
+    ]},
+  { id:"PLO3", name:"ทักษะการผลิตสื่อและนวัตกรรม", color:"var(--p3)",
+    subs:[
+      { code:"3.1", name:"ความสมบูรณ์และคุณภาพการผลิตของผลงาน",
+        desc:["ไม่สมบูรณ์ คุณภาพต่ำกว่ามาตรฐานชัดเจน","สมบูรณ์ระดับหนึ่ง มีข้อบกพร่องที่สังเกตได้","สมบูรณ์ คุณภาพระดับมาตรฐานวิชาชีพ","คุณภาพการผลิตระดับสูง พร้อมเผยแพร่จริง"] },
+      { code:"3.2", name:"ความคิดสร้างสรรค์/ความเป็นนวัตกรรม",
+        desc:["ไม่มีความคิดสร้างสรรค์ ลอกแบบทั่วไป","มีความคิดสร้างสรรค์เล็กน้อย","สร้างสรรค์เหมาะสมกับวัตถุประสงค์","สร้างสรรค์/เป็นนวัตกรรมโดดเด่น ใช้ได้จริง"] },
+    ]},
+  { id:"PLO4", name:"คุณธรรมและจรรยาบรรณ", color:"var(--p4)",
+    subs:[
+      { code:"4.1", name:"จรรยาบรรณวิชาชีพและการอ้างอิงที่ถูกต้อง",
+        desc:["มีประเด็นความถูกต้อง/การอ้างอิงที่ไม่เหมาะสม","ตระหนักระดับพื้นฐาน ยังไม่รอบคอบ","ปฏิบัติตามจรรยาบรรณวิชาชีพอย่างเหมาะสม","ยึดถือจรรยาบรรณอย่างเคร่งครัดและเป็นแบบอย่าง"] },
+      { code:"4.2", name:"การคำนึงถึงผลกระทบต่อสังคม/การรู้เท่าทันสื่อ",
+        desc:["ไม่คำนึงถึงผลกระทบต่อสังคม","คำนึงบ้างแต่ไม่รอบด้าน","พิจารณาผลกระทบต่อสังคมอย่างเหมาะสม","พิจารณารอบด้าน สื่อสารอย่างมีจิตสำนึกสาธารณะโดดเด่น"] },
+    ]},
+];
+
+let students = [];          // saved
+let current = {};           // current selections: {"1.1":3,...}
+
+const $ = s => document.querySelector(s);
+const passMark = () => parseFloat($("#setPass").value) || 3;
+
+// ---------- build assessment form ----------
+function buildForm(){
+  const area = $("#ploArea");
+  area.innerHTML = "";
+  PLOS.forEach(plo=>{
+    const block = document.createElement("div");
+    block.className = "ploblock";
+    block.innerHTML = `<h3><span class="dot" style="background:${plo.color}"></span>${plo.id} — ${plo.name}
+        <span class="plo-score none" id="sc-${plo.id}" style="margin-left:auto">—</span></h3>
+      <p class="ploname">ค่าเฉลี่ยของ ${plo.subs.length} ตัวชี้วัด · ผ่านเมื่อ ≥ เกณฑ์</p>`;
+    plo.subs.forEach(sub=>{
+      const row = document.createElement("div");
+      row.className = "sub-row";
+      let b = "";
+      for(let v=1;v<=4;v++) b += `<button class="scorebtn" data-v="${v}" onclick="pick('${sub.code}',${v},this)">${v}</button>`;
+      row.innerHTML = `<div class="sub-label"><span class="sub-code">${sub.code}</span>${sub.name}</div>
+        <div class="btns">${b}</div>
+        <div class="descline" id="d-${sub.code.replace('.','_')}"></div>`;
+      block.appendChild(row);
+    });
+    area.appendChild(block);
+  });
+}
+
+function pick(code, v, btn){
+  current[code] = v;
+  btn.parentElement.querySelectorAll(".scorebtn").forEach(x=>x.classList.remove("sel"));
+  btn.classList.add("sel");
+  // descriptor
+  const plo = PLOS.find(p=>p.subs.some(s=>s.code===code));
+  const sub = plo.subs.find(s=>s.code===code);
+  $("#d-"+code.replace('.','_')).textContent = "▸ " + sub.desc[v-1];
+  recalc();
+}
+
+function ploAvg(plo){
+  const vals = plo.subs.map(s=>current[s.code]).filter(x=>x!=null);
+  if(vals.length < plo.subs.length) return null;
+  return vals.reduce((a,b)=>a+b,0)/vals.length;
+}
+
+function recalc(){
+  const mark = passMark();
+  let allDone = true, allPass = true;
+  PLOS.forEach(plo=>{
+    const avg = ploAvg(plo);
+    const el = $("#sc-"+plo.id);
+    if(avg==null){ el.className="plo-score none"; el.textContent="—"; allDone=false; allPass=false; return; }
+    const pass = avg >= mark;
+    el.className = "plo-score " + (pass?"pass":"fail");
+    el.textContent = avg.toFixed(1) + (pass?"  ✓ ผ่าน":"  ✗ ยังไม่ผ่าน");
+    if(!pass) allPass=false;
+  });
+  const ob = $("#overallBadge");
+  if(!allDone){ ob.className="overall none"; ob.textContent="ยังประเมินไม่ครบ"; }
+  else if(allPass){ ob.className="overall pass"; ob.textContent="✓ บรรลุครบทั้ง 4 PLO"; }
+  else { ob.className="overall fail"; ob.textContent="✗ ยังไม่บรรลุครบ"; }
+}
+
+function resetForm(){
+  current = {};
+  $("#stName").value=""; $("#stId").value="";
+  buildForm(); recalc();
+}
+
+function saveStudent(){
+  const name = $("#stName").value.trim();
+  if(!name){ alert("กรุณากรอกชื่อ – สกุลนักศึกษา"); return; }
+  const incomplete = PLOS.some(p=>ploAvg(p)==null);
+  if(incomplete){ alert("กรุณากดเลือกระดับให้ครบทุกตัวชี้วัดก่อนบันทึก"); return; }
+  const mark = passMark();
+  const rec = { name, id:$("#stId").value.trim(), track:$("#stTrack").value, plo:{} };
+  PLOS.forEach(p=>{ const a=ploAvg(p); rec.plo[p.id]={avg:a, pass:a>=mark}; });
+  rec.allPass = PLOS.every(p=>rec.plo[p.id].pass);
+  students.push(rec);
+  resetForm();
+  renderRoster(); renderDash();
+}
+
+function delStudent(i){ students.splice(i,1); renderRoster(); renderDash(); }
+
+function renderRoster(){
+  const area = $("#rosterArea");
+  $("#countTag").textContent = students.length ? `(${students.length} คน)` : "";
+  if(!students.length){ area.innerHTML = `<div class="empty">ยังไม่มีรายชื่อ — ประเมินและกด “บันทึกนักศึกษา” ด้านบน</div>`; return; }
+  let h = `<div style="overflow-x:auto"><table><thead><tr>
+    <th>ชื่อ – สกุล</th><th>Track</th>
+    <th>PLO1</th><th>PLO2</th><th>PLO3</th><th>PLO4</th><th>ผลรวม</th><th class="no-print"></th>
+    </tr></thead><tbody>`;
+  students.forEach((s,i)=>{
+    h += `<tr><td class="name">${esc(s.name)}<div style="font-size:12px;color:var(--muted);font-weight:400">${esc(s.id||"")}</div></td>
+      <td>${esc(s.track)}</td>`;
+    PLOS.forEach(p=>{ const c=s.plo[p.id]; h+=`<td><span class="tag ${c.pass?'p':'f'}">${c.avg.toFixed(1)}</span></td>`; });
+    h += `<td><b style="font-family:'Kanit';color:${s.allPass?'var(--pass)':'var(--fail)'}">${s.allPass?'บรรลุครบ':'ยังไม่ครบ'}</b></td>
+      <td class="no-print"><button class="del" title="ลบ" onclick="delStudent(${i})">×</button></td></tr>`;
+  });
+  h += `</tbody></table></div>`;
+  area.innerHTML = h;
+}
+
+function renderDash(){
+  const area = $("#dashArea");
+  if(!students.length){ area.innerHTML = `<div class="empty">ยังไม่มีข้อมูล — บันทึกนักศึกษาอย่างน้อย 1 คนเพื่อดูสรุป</div>`; return; }
+  const n = students.length;
+  const target = parseFloat($("#setTarget").value)||70;
+  const allPassN = students.filter(s=>s.allPass).length;
+  const allPassPct = allPassN/n*100;
+
+  let h = `<div class="stat-grid">
+    <div class="stat"><div class="big">${n}</div><div class="lbl">นักศึกษาที่ประเมิน</div></div>
+    <div class="stat"><div class="big">${allPassN}</div><div class="lbl">บรรลุครบทั้ง 4 PLO</div></div>
+    <div class="stat"><div class="big" style="color:${allPassPct>=target?'var(--pass)':'var(--orange)'}">${allPassPct.toFixed(0)}%</div><div class="lbl">อัตราบรรลุครบ (เป้า ${target}%)</div></div>
+  </div>`;
+
+  PLOS.forEach(p=>{
+    const passN = students.filter(s=>s.plo[p.id].pass).length;
+    const pct = passN/n*100;
+    const ok = pct>=target;
+    h += `<div class="bar-row">
+      <div class="top"><span><b style="color:${p.color}">${p.id}</b> ${p.name}</span><span><b>${pct.toFixed(0)}%</b> <span style="color:var(--muted)">(${passN}/${n})</span></span></div>
+      <div class="track"><div class="fill" style="width:${pct}%;background:${ok?'var(--pass)':'var(--orange)'}"></div><div class="target-line" style="left:${target}%"></div></div>
+      <div class="hint">${ok?'✓ ถึงเป้าหมาย':'ยังไม่ถึงเป้าหมาย '+target+'% (เส้นน้ำเงิน)'}</div>
+    </div>`;
+  });
+  area.innerHTML = h;
+}
+
+function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function exportCSV(){
+  if(!students.length){ alert("ยังไม่มีข้อมูลให้ส่งออก"); return; }
+  const yr = $("#setYear").value, lv = $("#setLevel").value;
+  let rows = [["ปีการศึกษา","ชั้นปี","รหัสนักศึกษา","ชื่อ-นามสกุล","PLO","คะแนนเฉลี่ย"]];
+  students.forEach(s=>{ PLOS.forEach(p=>{ rows.push([yr,lv,s.id||"",s.name,p.id,s.plo[p.id].avg.toFixed(2)]); }); });
+  const csv = "\uFEFF" + rows.map(r=>r.map(c=>`"${(""+c).replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv],{type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `PLO_Capstone_${yr}.csv`;
+  a.click();
+}
+
+["#setTarget","#setPass"].forEach(id=>document.addEventListener("input",e=>{ if(e.target.matches(id)){ recalc(); renderRoster(); renderDash(); }}));
+
+buildForm(); recalc(); renderRoster(); renderDash();
+</script>
+</body>
+</html>
